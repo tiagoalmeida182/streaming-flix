@@ -3,19 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streaming Oz - O Maravilhoso Mágico de Oz</title>
+    <title>Streaming de Filmes</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>O Maravilhoso Mágico de Oz - Parte 1 (2025)</h1>
-        <div id="movie-details">
-            <p>Carregando informações do filme...</p>
-        </div>
-        <div id="video-player">
-            <!-- O iframe do player será inserido aqui -->
-        </div>
-        <button id="load-movie-button">Carregar Filme</button>
+        <!-- Área de Destaque para o Player -->
+        <section id="main-movie-player" class="main-player-area">
+            <h1>Selecione um filme abaixo</h1>
+            <div id="movie-details">
+                <p>As informações do filme e o player aparecerão aqui.</p>
+            </div>
+            <div id="video-player">
+                <!-- O iframe do player será inserido aqui dinamicamente -->
+            </div>
+        </section>
+
+        <hr class="separator">
+
+        <!-- Galeria de Cards de Filmes -->
+        <section>
+            <h2>Filmes</h2>
+            <div id="movie-gallery" class="gallery">
+                <!-- Os cards dos filmes serão inseridos aqui pelo JavaScript -->
+            </div>
+        </section>
     </div>
 
     <script src="script.js"></script>

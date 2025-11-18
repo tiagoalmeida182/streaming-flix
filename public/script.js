@@ -1,55 +1,90 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const mainMovieTitle = document.querySelector('#main-movie-player h1');
     const movieDetailsDiv = document.getElementById('movie-details');
     const videoPlayerDiv = document.getElementById('video-player');
-    const loadMovieButton = document.getElementById('load-movie-button');
+    const movieGallery = document.getElementById('movie-gallery');
 
-    // Assumindo que o filme tem um ID TMDB fictício ou IMDB
-    const TMDB_ID = '658224'; // SUBSTITUA PELO ID REAL SE VOCÊ TIVER UM
-    const IMDB_ID = 'tt24218194'; // SUBSTITUA PELO ID REAL SE VOCÊ TIVER UM
-    const MOVIE_TITLE = 'O Maravilhoso Mágico de Oz - Parte 1';
-    const MOVIE_YEAR = '2025';
+    // --- LISTA DE FILMES ---
+    const movies = [
+        { 
+            tmdbId: '658224', 
+            title: 'O Maravilhoso Mágico de Oz', 
+            year: '2025',
+            image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/s4pK8Cpna56SbYbmFGgKyBvLj7A.jpg' 
+        },
+        { 
+            tmdbId: '1126166', 
+            title: 'Ameaça no Ar (Flight Risk)', 
+            year: '2025',
+            image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/bXFAQ5fM3BkFb1y6Gz85m4UmwfP.jpg'
+        },
+        { 
+            // Atualizei este para bater com o seu print ("Uma Batalha Após a Outra")
+            tmdbId: '1054867', 
+            title: 'Uma Batalha Após a Outra (Hidden Strike)', 
+            year: '2023',
+            image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/2peYXW6CoruehDnKJGMjl2NuaNB.jpg'
+        }
+    ];
 
-    // URL base da API de streaming (usaremos o método por ID TMDB)
-    const STREAMING_BASE_URL = 'https://telaflixapi.com/e/';
-
-    // Função para carregar os detalhes e o player do filme
-    async function loadMovie() {
-        movieDetailsDiv.innerHTML = `<p>Buscando detalhes do filme...</p>`;
-        videoPlayerDiv.innerHTML = ''; // Limpa o player anterior
+    async function loadMovie(movie) {
+        mainMovieTitle.textContent = `${movie.title} (${movie.year})`;
+        videoPlayerDiv.innerHTML = ''; 
+        movieDetailsDiv.innerHTML = `<p>Buscando link do filme, por favor aguarde...</p>`;
 
         try {
-            // URL que será usada como src do iframe para o player da TelaflixAPI
-            const playerUrl = `${STREAMING_BASE_URL}${TMDB_ID}`;
-            // Ou, se preferir usar por título e ano (menos recomendado para player direto):
-            // const playerUrl = `${STREAMING_BASE_URL}movie?title=${encodeURIComponent(MOVIE_TITLE)}&year=${MOVIE_YEAR}`;
+            const response = await fetch(`/api/get-movie-link/${movie.tmdbId}`);
+            const data = await response.json();
 
-            // Exibindo as informações do filme
-            movieDetailsDiv.innerHTML = `
-                <p><strong>Título:</strong> ${MOVIE_TITLE}</p>
-                <p><strong>Ano:</strong> ${MOVIE_YEAR}</p>
-                <p><strong>TMDB ID:</strong> ${TMDB_ID}</p>
-                <p><strong>IMDB ID:</strong> ${IMDB_ID}</p>
-                <p>Para assistir, clique em "Carregar Filme" ou o player já carregou.</p>
-                <p>URL da API de Streaming (para referência): <a href="${playerUrl}" target="_blank">${playerUrl}</a></p>
-            `;
-
-            // Criar o iframe e inseri-lo no div do player
-            const iframe = document.createElement('iframe');
-            iframe.src = playerUrl;
-            iframe.allowFullscreen = true;
-            iframe.loading = "lazy";
-            videoPlayerDiv.appendChild(iframe);
-
+            if (data.success) {
+                const finalUrl = data.url;
+                videoPlayerDiv.innerHTML = `
+                    <iframe 
+                        src="${finalUrl}" 
+                        width="100%" 
+                        height="100%" 
+                        frameborder="0" 
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                `;
+                movieDetailsDiv.innerHTML = `<p>Player carregado. Bom filme!</p>`;
+            } else {
+                throw new Error(data.message || 'Falha ao obter o link do filme.');
+            }
         } catch (error) {
             console.error('Erro ao carregar o filme:', error);
-            movieDetailsDiv.innerHTML = `<p style="color: red;">Erro ao carregar o filme. Por favor, tente novamente.</p>`;
-            videoPlayerDiv.innerHTML = `<p style="color: red;">Não foi possível carregar o player de vídeo.</p>`;
+            movieDetailsDiv.innerHTML = `<p style="color: red;">${error.message}</p>`;
         }
     }
 
-    // Adiciona um listener para o botão "Carregar Filme"
-    loadMovieButton.addEventListener('click', loadMovie);
+    function renderMovieCards() {
+        movieGallery.innerHTML = ''; 
+        movies.forEach(movie => {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            
+            // AQUI ESTÁ A MÁGICA: Inserimos a tag <img> antes do texto
+            card.innerHTML = `
+                <img src="${movie.image}" alt="${movie.title}">
+                <div class="movie-card-info">
+                    <h3>${movie.title}</h3>
+                    <p>${movie.year}</p>
+                </div>
+            `;
+            
+            card.addEventListener('click', () => {
+                loadMovie(movie);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            movieGallery.appendChild(card);
+        });
+    }
 
-    // Carregar o filme automaticamente ao carregar a página
-    loadMovie();
+    renderMovieCards();
+    
+    // Carrega o primeiro filme da lista automaticamente
+    if (movies.length > 0) {
+        loadMovie(movies[0]); 
+    }
 });
