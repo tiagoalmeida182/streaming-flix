@@ -6,31 +6,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LISTA DE FILMES ---
     const movies = [
+        // SEUS FILMES DA API (Adicionei type: 'api' neles)
         { 
+            type: 'api',
             tmdbId: '658224', 
             title: 'O Maravilhoso Mágico de Oz', 
             year: '2025',
             image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/s4pK8Cpna56SbYbmFGgKyBvLj7A.jpg' 
         },
         { 
+            type: 'api',
             tmdbId: '1126166', 
             title: 'Ameaça no Ar (Flight Risk)', 
             year: '2025',
             image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/bXFAQ5fM3BkFb1y6Gz85m4UmwfP.jpg'
         },
         { 
-            // Atualizei este para bater com o seu print ("Uma Batalha Após a Outra")
+            type: 'api',
             tmdbId: '1054867', 
             title: 'Uma Batalha Após a Outra (Hidden Strike)', 
             year: '2023',
             image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/2peYXW6CoruehDnKJGMjl2NuaNB.jpg'
         },
-
-         { 
+        { 
+            type: 'api',
             tmdbId: '1084199', 
             title: 'Acompanhante Perfeita', 
             year: '2025',
             image: 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/jqcMaESCbgxSlFWDOW9icz3MoiL.jpg'
+        },
+
+        // --- SEU FILME BAIXADO (GOOGLE DRIVE) ---
+        { 
+            type: 'drive', // Tipo diferente
+            title: 'Predador Terras Selvagens', 
+            year: '2025',
+            // 🔴 IMPORTANTE: TROQUE O ID ABAIXO PELO ID DO SEU VÍDEO NO DRIVE
+            videoUrl: 'https://drive.google.com/file/d/1hFuxdBfW60ovnlnVU0_nAh3mtFwxUY6O/preview', 
+            // Escolha uma imagem para a capa
+            image: 'https://m.media-amazon.com/images/M/MV5BNTYzNTE1ZjUtOWM0Yy00MmY0LTg2ZTAtMGE2MTE3ODAzN2YxXkEyXkFqcGc@._V1_.jpg'
         }
     ];
 
@@ -39,6 +53,25 @@ document.addEventListener('DOMContentLoaded', () => {
         videoPlayerDiv.innerHTML = ''; 
         movieDetailsDiv.innerHTML = `<p>Buscando link do filme, por favor aguarde...</p>`;
 
+        // --- LÓGICA 1: FILME DO GOOGLE DRIVE ---
+        if (movie.type === 'drive') {
+            console.log('Carregando Google Drive:', movie.videoUrl);
+            
+            videoPlayerDiv.innerHTML = `
+                <iframe 
+                    src="${movie.videoUrl}" 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen" 
+                    allowfullscreen>
+                </iframe>
+            `;
+            movieDetailsDiv.innerHTML = `<p>Reproduzindo via Google Drive.</p>`;
+            return; // Para aqui e não tenta buscar na API
+        }
+
+        // --- LÓGICA 2: FILMES DA API ---
         try {
             const response = await fetch(`/api/get-movie-link/${movie.tmdbId}`);
             const data = await response.json();
@@ -71,9 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'movie-card';
             
-            // AQUI ESTÁ A MÁGICA: Inserimos a tag <img> antes do texto
+            // Adicionei o "onerror" para garantir que, se a imagem falhar, mostre uma genérica
             card.innerHTML = `
-                <img src="${movie.image}" alt="${movie.title}">
+                <img src="${movie.image}" alt="${movie.title}" onerror="this.src='https://placehold.co/600x900?text=Sem+Capa'">
                 <div class="movie-card-info">
                     <h3>${movie.title}</h3>
                     <p>${movie.year}</p>
@@ -90,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderMovieCards();
     
-    // Carrega o primeiro filme da lista automaticamente
     if (movies.length > 0) {
         loadMovie(movies[0]); 
     }
